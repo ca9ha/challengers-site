@@ -1,566 +1,75 @@
 "use strict";
-
-const $ = (id) => document.getElementById(id);
-
-const deckOrder = {
-  S: 0,
-  A: 1,
-  B: 2,
-  C: 3,
-};
-
-let cards = [];
-
-/**
- * Читает CSV с разделителем "," или ";".
- * Поддерживает BOM, кавычки, переносы строк внутри полей
- * и двойные кавычки, экранированные как "".
- */
-function parseCSV(source) {
-  const text = source.replace(/^\uFEFF/, "");
-
-  const firstLine = text.split(/\r\n|\n|\r/, 1)[0];
-  const delimiter =
-    firstLine.includes(";") && !firstLine.includes(",") ? ";" : ",";
-
-  const rows = [];
-
-  let row = [];
-  let field = "";
-  let inQuotes = false;
-  let quoteClosed = false;
-
-  function finishField() {
-    row.push(field);
-    field = "";
-    quoteClosed = false;
-  }
-
-  function finishRow() {
-    finishField();
-
-    if (row.some((value) => value.trim() !== "")) {
-      rows.push(row);
-    }
-
-    row = [];
-  }
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-
-    if (inQuotes) {
-      if (char === '"') {
-        if (text[i + 1] === '"') {
-          field += '"';
-          i++;
-        } else {
-          inQuotes = false;
-          quoteClosed = true;
-        }
-      } else {
-        field += char;
-      }
-
-      continue;
-    }
-
-    if (char === delimiter) {
-      finishField();
-      continue;
-    }
-
-    if (char === "\n" || char === "\r") {
-      if (char === "\r" && text[i + 1] === "\n") {
-        i++;
-      }
-
-      finishRow();
-      continue;
-    }
-
-    if (quoteClosed) {
-      if (char === " " || char === "\t") {
-        continue;
-      }
-
-      throw new Error(
-        `Запись ${rows.length + 1}: лишние символы после закрывающей кавычки.`
-      );
-    }
-
-    if (char === '"') {
-      if (field !== "") {
-        throw new Error(
-          `Запись ${rows.length + 1}: некорректные кавычки в CSV.`
-        );
-      }
-
-      inQuotes = true;
-      continue;
-    }
-
-    field += char;
-  }
-
-  if (inQuotes) {
-    throw new Error("В CSV не закрыты кавычки.");
-  }
-
-  if (field !== "" || row.length > 0 || quoteClosed) {
-    finishRow();
-  }
-
-  if (rows.length === 0) {
-    throw new Error("CSV-файл пуст.");
-  }
-
-  const headers = rows.shift().map((value) => value.trim());
-
-  const requiredHeaders = [
-    "id",
-    "name",
-    "deck",
-    "type",
-    "power",
-    "description",
-    "image",
-  ];
-
-  for (const header of requiredHeaders) {
-    if (!headers.includes(header)) {
-      throw new Error(`В CSV отсутствует столбец "${header}".`);
-    }
-  }
-
-  if (new Set(headers).size !== headers.length) {
-    throw new Error("В CSV повторяются названия столбцов.");
-  }
-
-  const usedIds = new Set();
-
-  return rows.map((values, index) => {
-    const recordNumber = index + 2;
-
-    if (values.length !== headers.length) {
-      throw new Error(
-        `Запись ${recordNumber}: ожидалось ${headers.length} полей, ` +
-          `получено ${values.length}. Проверьте разделители и кавычки.`
-      );
-    }
-
-    const card = Object.fromEntries(
-      headers.map((header, column) => [header, values[column].trim()])
-    );
-
-    if (!card.id || !card.name || !card.type || !card.image) {
-      throw new Error(
-        `Запись ${recordNumber}: заполните id, name, type и image.`
-      );
-    }
-
-    if (usedIds.has(card.id)) {
-      throw new Error(`Повторяется идентификатор карты: "${card.id}".`);
-    }
-
-    usedIds.add(card.id);
-
-    card.deck = card.deck.toUpperCase();
-
-    if (
-      card.deck !== "" &&
-      !Object.prototype.hasOwnProperty.call(deckOrder, card.deck)
-    ) {
-      throw new Error(
-        `Карта «${card.name}»: набор должен быть S, A, B, C или пустым.`
-      );
-    }
-
-    if (
-      card.power !== "" &&
-      (!Number.isFinite(Number(card.power)) || Number(card.power) < 0)
-    ) {
-      throw new Error(
-        `Карта «${card.name}»: базовая сила должна быть числом от 0.`
-      );
-    }
-
-    const imagePath = card.image.replace(/\\/g, "/");
-    const pathParts = imagePath.split("/");
-
-    if (
-      !imagePath.startsWith("images/") ||
-      pathParts.some((part) => part === ".." || part === "." || part === "") ||
-      /[?#]/.test(imagePath)
-    ) {
-      throw new Error(
-        `Карта «${card.name}»: укажите путь вида images/Название карты.png.`
-      );
-    }
-
-    card.imageURL = pathParts
-      .map((part) => encodeURIComponent(part))
-      .join("/");
-
-    return card;
-  });
+const $=id=>document.getElementById(id);
+const boxes={base:'Коробка 1 — Challengers',beach:'Коробка 2 — Пляжный сезон'};
+const ranks={S:0,A:1,B:2,C:3};
+let cards=[];
+function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
+function parseCSV(source){
+ const text=source.replace(/^\uFEFF/,'');
+ const header=text.split(/\r\n|\n|\r/,1)[0];
+ const sep=header.includes(';')&&!header.includes(',')?';':',';
+ const rows=[];let row=[],field='',quoted=false,closed=false;
+ const endField=()=>{row.push(field);field='';closed=false;};
+ const endRow=()=>{endField();if(row.some(v=>v.trim()))rows.push(row);row=[];};
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(quoted){if(c==='"'){if(text[i+1]==='"'){field+='"';i++;}else{quoted=false;closed=true;}}else field+=c;continue;}
+  if(c===sep){endField();continue;}
+  if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;endRow();continue;}
+  if(closed){if(c===' '||c==='\t')continue;throw Error('Лишние символы после кавычки в CSV.');}
+  if(c==='"'){if(field!=='')throw Error('Некорректные кавычки в CSV.');quoted=true;}else field+=c;
+ }
+ if(quoted)throw Error('В CSV не закрыты кавычки.');
+ if(field!==''||row.length||closed)endRow();
+ if(!rows.length)throw Error('CSV пуст.');
+ const headers=rows.shift().map(v=>v.trim());
+ for(const key of ['id','name','deck','type','power','description','image'])if(!headers.includes(key))throw Error('Нет столбца '+key);
+ if(new Set(headers).size!==headers.length)throw Error('Повторяются столбцы CSV.');
+ const ids=new Set();
+ return rows.map((values,index)=>{
+  if(values.length!==headers.length)throw Error(`Запись ${index+2}: неверное число полей.`);
+  const c=Object.fromEntries(headers.map((h,i)=>[h,values[i].trim()]));
+  // Missing box column is supported for the original box's legacy CSV.
+  c.box=headers.includes('box')?c.box:'base';
+  if(!Object.prototype.hasOwnProperty.call(boxes,c.box))throw Error(`Карта «${c.name}»: box должен быть base или beach.`);
+  if(!c.id||!c.name||!c.type||!c.image)throw Error(`Запись ${index+2}: заполните id, name, type, image.`);
+  const key=c.box+':'+c.id;
+  if(ids.has(key))throw Error('Повторяется id внутри коробки: '+key);ids.add(key);
+  c.deck=c.deck.toUpperCase();
+  if(c.deck&&!Object.prototype.hasOwnProperty.call(ranks,c.deck))throw Error(`Карта «${c.name}»: deck — S/A/B/C или пустое поле.`);
+  if(c.power!==''&&(!Number.isFinite(Number(c.power))||Number(c.power)<0))throw Error(`Карта «${c.name}»: некорректная сила.`);
+  const path=c.image.replace(/\\/g,'/');const parts=path.split('/');
+  if(!path.startsWith('images/')||parts.some(p=>!p||p==='.'||p==='..')||/[?#]/.test(path))throw Error(`Карта «${c.name}»: неверный путь изображения.`);
+  c.imageURL=parts.map(encodeURIComponent).join('/');return c;
+ });
 }
-
-function createElement(tag, className, text) {
-  const element = document.createElement(tag);
-
-  if (className) {
-    element.className = className;
-  }
-
-  if (text !== undefined) {
-    element.textContent = text;
-  }
-
-  return element;
+function refreshTypes(){const previous=$('type').value;const values=[...new Set(cards.filter(c=>!$('box').value||c.box===$('box').value).map(c=>c.type))].sort((a,b)=>a.localeCompare(b,'ru'));$('type').replaceChildren(new Option('Все типы',''),...values.map(v=>new Option(v,v)));if(values.includes(previous))$('type').value=previous;}
+function openCard(c){$('title').textContent=c.name;$('meta').textContent=[boxes[c.box],c.deck?'Набор '+c.deck:'Набор не указан',c.type,'Сила: '+(c.power===''?'—':c.power)].join(' · ');$('description').textContent=c.description||'Описание пока не добавлено.';const img=$('picture');img.onerror=()=>{img.onerror=null;img.removeAttribute('src');img.alt='Не найдено изображение: '+c.image;};img.alt=c.name;img.src=c.imageURL;$('modal').showModal();}
+function render(){
+ const q=$('search').value.trim().toLocaleLowerCase('ru');const box=$('box').value,deck=$('deck').value,type=$('type').value;
+ const list=cards.filter(c=>(!box||c.box===box)&&(!deck||(deck==='unknown'?c.deck==='':c.deck===deck))&&(!type||c.type===type)&&(!q||[c.name,c.type,c.description].join(' ').toLocaleLowerCase('ru').includes(q)));
+ const sort=$('sort').value;
+ list.sort((a,b)=>{let d=0;if(sort==='box')d=a.box.localeCompare(b.box);if(sort==='deck')d=(ranks[a.deck]??4)-(ranks[b.deck]??4);if(sort==='type')d=a.type.localeCompare(b.type,'ru');if(sort==='power'){const x=a.power===''?Infinity:Number(a.power),y=b.power===''?Infinity:Number(b.power);d=x===y?0:x-y;}return d||a.name.localeCompare(b.name,'ru');});
+ const base=cards.filter(c=>c.box==='base').length;const beach=cards.length-base;
+ $('status').textContent=`Показано ${list.length} из ${cards.length} · Коробка 1: ${base} · Коробка 2: ${beach}`;
+ const nodes=list.map(c=>{
+  const b=el('button','card');b.type='button';b.setAttribute('aria-label',boxes[c.box]+': '+c.name);
+  const art=el('div','art'),img=el('img');img.alt=c.name;img.loading='lazy';img.onerror=()=>{const msg=el('span','tags','Не найдено: '+c.image);msg.style.padding='16px';msg.style.overflowWrap='anywhere';img.replaceWith(msg);};img.src=c.imageURL;art.append(img);
+  const info=el('div','info'),tags=el('div','tags');tags.append(el('span','badge',c.deck||'?'),document.createTextNode(c.type+' · Сила '+(c.power===''?'—':c.power)));
+  const label=el('div','box-label',boxes[c.box]);label.style.color=c.box==='beach'?'#6ee7d5':'#c4b5fd';label.style.fontSize='12px';label.style.marginBottom='9px';
+  info.append(label,el('h2','',c.name),tags,el('p','excerpt',c.description||'Описание пока не добавлено.'));b.append(art,info);b.onclick=()=>openCard(c);return b;
+ });
+ if(!nodes.length)nodes.push(el('div','empty',box==='beach'&&!beach?'Карты второй коробки ещё не добавлены в CSV.':'Карты не найдены. Измените фильтры.'));
+ $('grid').replaceChildren(...nodes);
 }
-
-function getDeckRank(deck) {
-  return deckOrder[deck] ?? 4;
-}
-
-function getPowerValue(power) {
-  return power === "" ? Infinity : Number(power);
-}
-
-function createCardImage(card) {
-  const image = document.createElement("img");
-
-  image.alt = card.name;
-  image.loading = "lazy";
-
-  image.addEventListener(
-    "error",
-    () => {
-      const message = createElement(
-        "span",
-        "tags",
-        `Не найдено изображение: ${card.image}`
-      );
-
-      message.style.padding = "16px";
-      message.style.overflowWrap = "anywhere";
-
-      image.replaceWith(message);
-    },
-    { once: true }
-  );
-
-  image.src = card.imageURL;
-
-  return image;
-}
-
-function openCard(card) {
-  $("title").textContent = card.name;
-
-  $("meta").textContent = [
-    card.deck ? `Набор ${card.deck}` : "Набор не указан",
-    card.type,
-    `Базовая сила: ${card.power === "" ? "—" : card.power}`,
-  ].join(" · ");
-
-  $("description").textContent =
-    card.description || "Описание пока не добавлено.";
-
-  const picture = $("picture");
-
-  picture.onerror = () => {
-    picture.onerror = null;
-    picture.removeAttribute("src");
-    picture.alt = `Не удалось загрузить изображение: ${card.image}`;
-  };
-
-  picture.alt = card.name;
-  picture.src = card.imageURL;
-
-  $("modal").showModal();
-}
-
-function render() {
-  const query = $("search").value.trim().toLocaleLowerCase("ru");
-  const selectedDeck = $("deck").value;
-  const selectedType = $("type").value;
-  const sort = $("sort").value;
-
-  const filteredCards = cards.filter((card) => {
-    if (selectedDeck === "unknown" && card.deck !== "") {
-      return false;
-    }
-
-    if (
-      selectedDeck !== "" &&
-      selectedDeck !== "unknown" &&
-      card.deck !== selectedDeck
-    ) {
-      return false;
-    }
-
-    if (selectedType !== "" && card.type !== selectedType) {
-      return false;
-    }
-
-    if (query !== "") {
-      const searchableText = [
-        card.name,
-        card.type,
-        card.description,
-      ]
-        .join(" ")
-        .toLocaleLowerCase("ru");
-
-      if (!searchableText.includes(query)) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  filteredCards.sort((a, b) => {
-    let difference = 0;
-
-    if (sort === "deck") {
-      difference = getDeckRank(a.deck) - getDeckRank(b.deck);
-    } else if (sort === "type") {
-      difference = a.type.localeCompare(b.type, "ru");
-    } else if (sort === "power") {
-      const powerA = getPowerValue(a.power);
-      const powerB = getPowerValue(b.power);
-
-      difference = powerA === powerB ? 0 : powerA - powerB;
-    }
-
-    return difference || a.name.localeCompare(b.name, "ru");
-  });
-
-  $("status").textContent =
-    `Показано ${filteredCards.length} из ${cards.length}`;
-
-  const elements = filteredCards.map((card) => {
-    const button = createElement("button", "card");
-    button.type = "button";
-    button.setAttribute("aria-label", `Открыть карту ${card.name}`);
-
-    const art = createElement("div", "art");
-    art.append(createCardImage(card));
-
-    const info = createElement("div", "info");
-    const title = createElement("h2", "", card.name);
-    const tags = createElement("div", "tags");
-
-    const badge = createElement(
-      "span",
-      "badge",
-      card.deck || "?"
-    );
-
-    const power = card.power === "" ? "—" : card.power;
-
-    tags.append(
-      badge,
-      document.createTextNode(`${card.type} · Сила ${power}`)
-    );
-
-    const description = createElement(
-      "p",
-      "excerpt",
-      card.description || "Описание пока не добавлено."
-    );
-
-    info.append(title, tags, description);
-    button.append(art, info);
-
-    button.addEventListener("click", () => openCard(card));
-
-    return button;
-  });
-
-  if (elements.length === 0) {
-    elements.push(
-      createElement(
-        "div",
-        "empty",
-        cards.length === 0
-          ? "В CSV пока нет карточек."
-          : "Карты не найдены. Измените фильтры."
-      )
-    );
-  }
-
-  $("grid").replaceChildren(...elements);
-}
-
-function configureFilters() {
-  const deckSelect = $("deck");
-
-  deckSelect.replaceChildren(
-    new Option("Все наборы", ""),
-    new Option("S", "S"),
-    new Option("A", "A"),
-    new Option("B", "B"),
-    new Option("C", "C"),
-    new Option("Без набора", "unknown")
-  );
-
-  const types = [...new Set(cards.map((card) => card.type))].sort(
-    (a, b) => a.localeCompare(b, "ru")
-  );
-
-  $("type").replaceChildren(
-    new Option("Все типы", ""),
-    ...types.map((type) => new Option(type, type))
-  );
-}
-
-function configureEvents() {
-  for (const id of ["search", "deck", "type", "sort"]) {
-    $(id).addEventListener(
-      id === "search" ? "input" : "change",
-      render
-    );
-  }
-
-  $("reset").addEventListener("click", () => {
-    $("search").value = "";
-    $("deck").value = "";
-    $("type").value = "";
-    $("sort").value = "name";
-
-    render();
-  });
-
-  $("close").addEventListener("click", () => {
-    $("modal").close();
-  });
-
-  $("modal").addEventListener("click", (event) => {
-    const modal = $("modal");
-
-    if (event.target !== modal) {
-      return;
-    }
-
-    const bounds = modal.getBoundingClientRect();
-
-    const outside =
-      event.clientX < bounds.left ||
-      event.clientX > bounds.right ||
-      event.clientY < bounds.top ||
-      event.clientY > bounds.bottom;
-
-    if (outside) {
-      modal.close();
-    }
-  });
-}
-
-async function loadCards() {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
-  try {
-    const response = await fetch("data/cards.csv", {
-      cache: "no-cache",
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Не удалось загрузить data/cards.csv: HTTP ${response.status}.`
-      );
-    }
-
-    const text = await response.text();
-
-    if (/^\s*<!doctype html|^\s*<html[\s>]/i.test(text)) {
-      throw new Error(
-        "Вместо CSV сервер вернул HTML. Проверьте путь data/cards.csv."
-      );
-    }
-
-    return parseCSV(text);
-  } catch (error) {
-    if (error.name === "AbortError") {
-      throw new Error(
-        "Загрузка CSV заняла больше 15 секунд. Проверьте соединение и повторите попытку."
-      );
-    }
-
-    throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-function showError(error) {
-  console.error("Ошибка каталога Challengers:", error);
-
-  const message =
-    error instanceof Error ? error.message : String(error);
-
-  const status = $("status");
-  const grid = $("grid");
-
-  if (status) {
-    status.textContent = `Ошибка: ${message}`;
-  }
-
-  if (grid) {
-    const hint =
-      location.protocol === "file:"
-        ? "Откройте сайт через GitHub Pages или локальный HTTP-сервер, а не двойным щелчком по index.html."
-        : "Проверьте файл data/cards.csv. Подробности ошибки доступны в консоли браузера (F12 → Console).";
-
-    grid.replaceChildren(createElement("div", "empty", hint));
-  }
-}
-
-async function init() {
-  try {
-    const requiredIds = [
-      "search",
-      "deck",
-      "type",
-      "sort",
-      "reset",
-      "status",
-      "grid",
-      "modal",
-      "close",
-      "title",
-      "meta",
-      "description",
-      "picture",
-    ];
-
-    const missingIds = requiredIds.filter((id) => !$(id));
-
-    if (missingIds.length > 0) {
-      throw new Error(
-        `В index.html отсутствуют элементы: ${missingIds.join(", ")}.`
-      );
-    }
-
-    $("status").textContent = "Загрузка каталога…";
-
-    cards = await loadCards();
-
-    configureFilters();
-    configureEvents();
-    render();
-  } catch (error) {
-    showError(error);
-  }
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init, { once: true });
-} else {
-  init();
-}
+async function init(){try{
+ for(const id of ['box','search','deck','type','sort','reset','status','grid','modal','close','title','meta','description','picture'])if(!$(id))throw Error('Обновите index.html: отсутствует элемент '+id);
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);let text;
+ try{const response=await fetch('data/cards.csv',{cache:'no-cache',signal:controller.signal});if(!response.ok)throw Error('Ошибка загрузки data/cards.csv: HTTP '+response.status);text=await response.text();}finally{clearTimeout(timer);}
+ if(/^\s*(<!doctype html|<html[\s>])/i.test(text))throw Error('Вместо CSV получен HTML. Проверьте путь data/cards.csv.');
+ cards=parseCSV(text);refreshTypes();render();
+ $('box').onchange=()=>{refreshTypes();render();};$('search').oninput=render;for(const id of ['deck','type','sort'])$(id).onchange=render;
+ $('reset').onclick=()=>{for(const id of ['box','search','deck','type'])$(id).value='';$('sort').value='name';refreshTypes();render();};
+ $('close').onclick=()=>$('modal').close();$('modal').onclick=e=>{if(e.target!==$('modal'))return;const r=$('modal').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('modal').close();};
+ }catch(error){console.error(error);if($('status'))$('status').textContent='Ошибка: '+(error.name==='AbortError'?'Превышено время загрузки CSV.':error.message);if($('grid'))$('grid').replaceChildren(el('div','empty','Проверьте CSV и запускайте сайт через HTTP-сервер. Подробности: F12 → Console.'));}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
