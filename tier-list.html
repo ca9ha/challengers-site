@@ -1,32 +1,93 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Пляжный сезон — Tier List</title>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Пляжный сезон — тир-лист</title>
 <style>
-:root{color-scheme:dark;--bg:#101321;--panel:#1b2030;--muted:#acb6cf;--accent:#b6a2ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f5f5ff;font:16px system-ui,sans-serif}header,main{max-width:1600px;margin:auto;padding:26px}header{padding-bottom:8px}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}h1{font-size:clamp(27px,5vw,48px);letter-spacing:-1.5px;margin:20px 0 8px}h1 span{color:var(--accent)}p{color:var(--muted);line-height:1.6}.tools{display:flex;gap:15px;align-items:end;flex-wrap:wrap;margin:22px 0}label{display:flex;flex-direction:column;gap:8px;color:var(--muted);font-size:13px}label:first-child{flex:1;min-width:220px}input,select,button{font:inherit;color:inherit;background:var(--panel);border:1px solid #454d69;border-radius:9px;padding:10px 13px}button,select{cursor:pointer}button:hover{border-color:var(--accent)}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.check{display:flex;flex-direction:row;align-items:center;padding:10px 0}.check input{accent-color:var(--accent)}.legend{font-size:13px}.board{border:1px solid #41485e;border-radius:14px;overflow:hidden}.tier-row{display:grid;grid-template-columns:105px minmax(0,1fr);border-bottom:1px solid #41485e;min-height:120px}.tier-row:last-child{border-bottom:0}.tier-label{margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#18202b;gap:7px;font-size:32px;padding:15px 5px}.tier-label small{font-size:12px;font-weight:500;text-align:center}.tier-S .tier-label{background:#ff898d}.tier-A .tier-label{background:#ffc487}.tier-B .tier-label{background:#ffe28a}.tier-C .tier-label{background:#dcf49c}.tier-D .tier-label{background:#99dfc7}.tier-unrated .tier-label{background:#b2b9cd;font-size:22px}.tier-cards{background:#181c28;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px;align-content:start}.card{min-width:0;max-width:180px;padding:0;overflow:hidden;border:1px solid #3f465f;border-radius:8px;text-align:left;transition:transform .15s;background:#242a3d}.card:hover{transform:translateY(-3px)}.art{aspect-ratio:315/460;background:#0b0e18;display:flex;align-items:center;justify-content:center;overflow:hidden}.art img{width:100%;height:100%;object-fit:contain}.missing{font-size:11px;overflow-wrap:anywhere;padding:8px;color:var(--muted)}.name{display:block;font-size:12px;line-height:1.35;padding:8px}.placeholder{grid-column:1/-1;align-self:center;margin:20px 0;color:var(--muted);font-size:14px}.status{font-size:14px}footer{margin:25px 0;color:var(--muted);font-size:12px}dialog{background:var(--panel);color:#fff;border:1px solid #454d69;border-radius:16px;width:calc(100% - 24px);max-width:850px;max-height:94vh;padding:20px}dialog::backdrop{background:#000b;backdrop-filter:blur(5px)}.close{display:block;margin:0 0 16px auto}.detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}.detail img{width:100%;max-height:76vh;object-fit:contain}.description{white-space:pre-wrap;color:#f0f1fa}.badge{display:inline-block;background:#37304f;border-radius:6px;padding:5px 10px}.error{padding:25px;background:#35202c;border-radius:12px;color:#ffd5de}body.compact .name{display:none}body.compact .tier-cards{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}@media(min-width:1000px){.tier-cards{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}@media(max-width:600px){header,main{padding:16px}.tier-row{grid-template-columns:58px minmax(0,1fr)}.tier-label{font-size:26px}.tier-label small{font-size:10px}.tier-cards{padding:8px;gap:8px;grid-template-columns:repeat(auto-fill,minmax(85px,1fr))}.name{font-size:11px;padding:6px}.detail{grid-template-columns:1fr}.detail img{max-height:52vh}.tier-unrated .tier-label{font-size:16px;overflow-wrap:anywhere}.tools label{width:100%}}
-</style></head><body><header><a href="index.html">← В каталог карт</a><h1>Пляжный сезон <span>Tier List</span></h1><p>Вторая коробка Challengers. Оценки от S — самых лучших до D — плохих.</p><div class="tools"><label>Поиск<input type="search" id="search" placeholder="Название, тип или эффект"></label><label>Тематическая колода<select id="type"><option value="">Все типы</option></select></label><label class="check"><input type="checkbox" id="personal" checked>Учитывать личные оценки браузера</label><label class="check"><input type="checkbox" id="compact">Компактный вид</label></div><p class="legend" id="source">Рейтинги загружаются из общего data/cards.csv.</p></header><main><p id="status" class="status" role="status" aria-live="polite">Загрузка тир-листа…</p><div id="board" class="board"></div><footer>Нажмите на карту, чтобы увеличить изображение. Используются только записи box=beach. Неофициальный каталог; права на изображения принадлежат их правообладателям.</footer></main><dialog id="modal" aria-labelledby="title"><button class="close" id="close" type="button">Закрыть ✕</button><div class="detail"><img id="picture" alt=""><div><span class="badge" id="badge"></span><h2 id="title"></h2><p id="meta"></p><p class="description" id="description"></p></div></div></dialog>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#111421;color:#f5f5ff;font:16px system-ui,sans-serif}header,main{max-width:1550px;padding:24px;margin:auto}a{color:#bdacff}h1{font-size:clamp(28px,5vw,46px);margin:20px 0 8px}p{color:#b7c1d9;line-height:1.6}.tools{display:flex;flex-wrap:wrap;gap:16px;align-items:end;margin:20px 0}label{display:flex;flex-direction:column;gap:8px;color:#b7c1d9;font-size:14px}label:first-child{flex:1;min-width:210px}input,select,button{font:inherit;border:1px solid #454d69;border-radius:9px;padding:10px 12px;background:#1c2235;color:#fff}button,select{cursor:pointer}.check{flex-direction:row;align-items:center;padding:10px 0}input[type=checkbox]{accent-color:#baabff}:focus-visible{outline:3px solid #baabff;outline-offset:3px}.board{border:1px solid #42495e;border-radius:12px;overflow:hidden}.row{display:grid;grid-template-columns:95px minmax(0,1fr);border-bottom:1px solid #42495e;min-height:110px}.row:last-child{border-bottom:0}.tier{margin:0;padding:14px 5px;color:#19202d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:30px}.tier small{font-size:12px;text-align:center}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;padding:12px;background:#191d29;align-content:start}.card{padding:0;max-width:180px;min-width:0;border-radius:8px;overflow:hidden;text-align:left}.art{aspect-ratio:315/460;display:flex;align-items:center;justify-content:center;background:#0c0f18}.art img{width:100%;height:100%;object-fit:contain}.name{display:block;font-size:12px;padding:8px;line-height:1.4}.missing{font-size:11px;padding:8px;overflow-wrap:anywhere}.empty{grid-column:1/-1;color:#aeb8cd;padding:14px}.compact .name{display:none}.compact .cards{grid-template-columns:repeat(auto-fill,minmax(90px,1fr))}.error{color:#ffb9c5}.source{font-size:13px}dialog{background:#1c2235;color:#fff;border:1px solid #454d69;border-radius:15px;width:calc(100% - 24px);max-width:850px;max-height:94vh;padding:20px}dialog::backdrop{background:#000b}.close{display:block;margin:0 0 15px auto}.detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}.detail img{width:100%;max-height:75vh;object-fit:contain}.description{white-space:pre-wrap}footer{font-size:12px;color:#aeb8cd;margin-top:25px}@media(max-width:600px){header,main{padding:15px}.row{grid-template-columns:55px minmax(0,1fr)}.cards{grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:7px;padding:7px}.tier{font-size:24px}.tier small{font-size:10px}.detail{grid-template-columns:1fr}.detail img{max-height:50vh}.tools label{width:100%}}
+</style></head><body><header><a href="index.html">← В каталог</a><h1>Пляжный сезон — Tier List</h1><p>S — лучшие, D — плохие. Набор карты и её рейтинг — разные поля.</p><div class="tools"><label>Поиск<input id="search" type="search" placeholder="Название, тип или эффект"></label><label>Тематическая колода<select id="type"><option value="">Все типы</option></select></label><label class="check"><input type="checkbox" id="personal" checked>Личные оценки браузера</label><label class="check"><input type="checkbox" id="compact">Компактный вид</label></div><p id="source" class="source"></p></header><main><p id="status" role="status" aria-live="polite">Загрузка тир-листа…</p><div id="board" class="board"></div><footer>Нажмите на карту для увеличения. Данные: data/cards.csv, только box=beach. Неофициальный каталог.</footer></main><dialog id="modal" aria-labelledby="title"><button id="close" class="close">Закрыть</button><div class="detail"><img id="picture" alt=""><div><h2 id="title"></h2><p id="meta"></p><p id="description" class="description"></p></div></div></dialog>
 <script>
-"use strict";
-const $=id=>document.getElementById(id);
-const tiers=['S','A','B','C','D',''];
-const meanings={S:'Лучшие',A:'Отличные',B:'Хорошие',C:'Слабые',D:'Плохие','':'Без оценки'};
-let cards=[],overrides={},storageReadable=true;
-function has(o,k){return Object.prototype.hasOwnProperty.call(o,k);}
-function make(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
-function readPersonal(){overrides={};storageReadable=true;try{const data=JSON.parse(localStorage.getItem('challengers-personal-ratings-v1')||'{}');if(data&&typeof data==='object'&&!Array.isArray(data))for(const [k,v] of Object.entries(data))if(tiers.includes(v))overrides[k]=v;}catch(e){storageReadable=false;}}
-function getRating(c){const k=JSON.stringify([c.box,c.id]);return $('personal').checked&&has(overrides,k)?overrides[k]:c.rating;}
-function parseCSV(source){const text=source.replace(/^﻿/,'');const first=text.split(/
-|
-|/,1)[0];const sep=first.includes(';')&&!first.includes(',')?';':',';const rows=[];let row=[],field='',quoted=false,closed=false;function endField(){row.push(field);field='';closed=false;}function endRow(){endField();if(row.some(v=>v.trim()))rows.push(row);row=[];}
-for(let i=0;i<text.length;i++){const c=text[i];if(quoted){if(c==='"'){if(text[i+1]==='"'){field+='"';i++;}else{quoted=false;closed=true;}}else field+=c;continue;}if(c===sep){endField();continue;}if(c==='
-'||c===''){if(c===''&&text[i+1]==='
-')i++;endRow();continue;}if(closed){if(c===' '||c==='	')continue;throw Error('Лишние символы после кавычки в CSV.');}if(c==='"'){if(field!=='')throw Error('Некорректные кавычки в CSV.');quoted=true;}else field+=c;}
-if(quoted)throw Error('В CSV не закрыты кавычки.');if(field!==''||row.length||closed)endRow();if(!rows.length)throw Error('CSV пуст.');const headers=rows.shift().map(v=>v.trim());if(new Set(headers).size!==headers.length)throw Error('Повторяются заголовки CSV.');for(const key of ['id','name','box','type','image'])if(!headers.includes(key))throw Error('В CSV нет столбца '+key+'. Используйте объединённый файл двух коробок.');const ids=new Set();
-return rows.map((values,i)=>{if(values.length!==headers.length)throw Error('Запись '+(i+2)+': неверное число полей.');return Object.fromEntries(headers.map((h,j)=>[h,values[j].trim()]));}).filter(c=>c.box==='beach').map(c=>{if(!c.id||!c.name||!c.type||!c.image)throw Error('Заполните id, name, type, image у карт второй коробки.');if(ids.has(c.id))throw Error('Повторяется id второй коробки: '+c.id);ids.add(c.id);c.rating=(c.rating||'').toUpperCase();if(!tiers.includes(c.rating))throw Error('Карта «'+c.name+'»: rating должен быть S/A/B/C/D или пустым.');const path=c.image.replace(/\/g,'/'),parts=path.split('/');if(!path.startsWith('images/')||parts.some(p=>!p||p==='.'||p==='..')||/[?#]/.test(path))throw Error('Неверный путь изображения: '+c.image);c.imageURL=parts.map(encodeURIComponent).join('/');return c;});}
-function openCard(c){$('title').textContent=c.name;const r=getRating(c);$('badge').textContent=r?'Рейтинг '+r+' — '+meanings[r]:'Без рейтинга';$('meta').textContent=['Коробка 2 — Пляжный сезон',c.type,c.deck?'Набор '+c.deck:'Набор не указан','Сила: '+(c.power||'—')].join(' · ');$('description').textContent=c.description||'Описание пока не добавлено.';const img=$('picture');img.onerror=()=>{img.onerror=null;img.removeAttribute('src');img.alt='Не найдено: '+c.image;};img.alt=c.name;img.src=c.imageURL;$('modal').showModal();}
-function render(){const q=$('search').value.trim().toLocaleLowerCase('ru'),type=$('type').value;const filtered=cards.filter(c=>(!type||c.type===type)&&(!q||[c.name,c.type,c.description||''].join(' ').toLocaleLowerCase('ru').includes(q))).sort((a,b)=>a.name.localeCompare(b.name,'ru'));let personalCount=0;for(const c of cards)if(has(overrides,JSON.stringify([c.box,c.id])))personalCount++;
-$('source').textContent=$('personal').checked?(storageReadable?'Источник: data/cards.csv + личные оценки браузера ('+personalCount+').':'Источник: data/cards.csv. Личное хранилище недоступно.'):'Источник: только rating из data/cards.csv; личные оценки не учитываются.';
-$('status').textContent='Показано '+filtered.length+' из '+cards.length+' записей второй коробки. Внутри рейтинга — по алфавиту.';
-const rows=tiers.map(tier=>{const list=filtered.filter(c=>getRating(c)===tier);const row=make('section','tier-row tier-'+(tier||'unrated'));const label=make('h2','tier-label');label.append(document.createTextNode(tier||'—'),make('small','',meanings[tier]),make('small','',String(list.length)));row.setAttribute('aria-label',(tier?'Рейтинг '+tier:'Без рейтинга')+': '+list.length);const area=make('div','tier-cards');for(const c of list){const b=make('button','card');b.type='button';b.title=c.name+' · '+c.type;b.setAttribute('aria-label','Открыть карту '+c.name);const art=make('div','art'),img=make('img');img.alt=c.name;img.loading='lazy';img.onerror=()=>img.replaceWith(make('span','missing','Не найдено: '+c.image));img.src=c.imageURL;art.append(img);b.append(art,make('span','name',c.name));b.onclick=()=>openCard(c);area.append(b);}if(!list.length)area.append(make('p','placeholder','Нет карт'));row.append(label,area);return row;});$('board').replaceChildren(...rows);}
-$('search').oninput=render;$('type').onchange=render;$('personal').onchange=render;$('compact').onchange=()=>document.body.classList.toggle('compact',$('compact').checked);$('close').onclick=()=>$('modal').close();$('modal').onclick=e=>{if(e.target!==$('modal'))return;const r=$('modal').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('modal').close();};
-window.addEventListener('storage',e=>{if(e.key===null||e.key==='challengers-personal-ratings-v1'){readPersonal();render();}});window.addEventListener('focus',()=>{readPersonal();render();});
-(async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{const response=await fetch('data/cards.csv',{cache:'no-cache',signal:controller.signal});if(!response.ok)throw Error('Не удалось загрузить data/cards.csv: HTTP '+response.status);const text=await response.text();if(/^\s*(<!doctype html|<html[\s>])/i.test(text))throw Error('Вместо CSV получен HTML. Проверьте путь data/cards.csv.');cards=parseCSV(text);readPersonal();const types=[...new Set(cards.map(c=>c.type))].sort((a,b)=>a.localeCompare(b,'ru'));$('type').replaceChildren(new Option('Все типы',''),...types.map(t=>new Option(t,t)));render();if(!cards.length)$('status').textContent='В CSV нет записей box=beach. Добавьте карты второй коробки.';}catch(e){console.error(e);$('status').textContent='Ошибка: '+(e.name==='AbortError'?'Загрузка заняла более 15 секунд.':e.message);$('board').className='error';$('board').textContent='Откройте страницу через HTTP-сервер или GitHub Pages. Проверьте data/cards.csv. Подробности: F12 → Console.';}finally{clearTimeout(timer);}})();
+window.addEventListener('error',function(event){var status=document.getElementById('status');if(status){status.className='error';status.textContent='Ошибка JavaScript: '+event.message;}});
+</script>
+<script>
+'use strict';
+(function(){
+ const $=id=>document.getElementById(id);
+ const tiers=['S','A','B','C','D',''];
+ const labels=['Лучшие','Отличные','Хорошие','Слабые','Плохие','Без оценки'];
+ const colors=['#ff898d','#ffc487','#ffe28a','#dcf49c','#99dfc7','#b2b9cd'];
+ const storageKey='challengers-personal-ratings-v1';
+ let cards=[],personal={},storageOK=true;
+ function own(o,k){return Object.prototype.hasOwnProperty.call(o,k);}
+ function make(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
+ function error(message){$('status').className='error';$('status').textContent='Ошибка: '+message;}
+ function readPersonal(){personal={};storageOK=true;try{const data=JSON.parse(localStorage.getItem(storageKey)||'{}');if(data&&typeof data==='object'&&!Array.isArray(data)){for(const [k,v] of Object.entries(data)){if(tiers.includes(v))personal[k]=v;}}}catch(e){storageOK=false;}}
+ function getRating(card){const k=JSON.stringify([card.box,card.id]);return $('personal').checked&&own(personal,k)?personal[k]:card.rating;}
+ function parseCSV(source){
+  const text=source.replace(/^\uFEFF/,'');
+  const header=text.split(/\r\n|\n|\r/,1)[0];
+  const separator=header.includes(';')&&!header.includes(',')?';':',';
+  const rows=[];let row=[],field='',quoted=false,closed=false;
+  function endField(){row.push(field);field='';closed=false;}
+  function endRow(){endField();if(row.some(v=>v.trim()!==''))rows.push(row);row=[];}
+  for(let i=0;i<text.length;i++){
+   const char=text[i];
+   if(quoted){if(char==='"'){if(text[i+1]==='"'){field+='"';i++;}else{quoted=false;closed=true;}}else field+=char;continue;}
+   if(char===separator){endField();continue;}
+   if(char==='\r'||char==='\n'){if(char==='\r'&&text[i+1]==='\n')i++;endRow();continue;}
+   if(closed){if(char===' '||char==='\t')continue;throw Error('Лишние символы после кавычки в CSV.');}
+   if(char==='"'){if(field!=='')throw Error('Некорректные кавычки в CSV.');quoted=true;}else field+=char;
+  }
+  if(quoted)throw Error('В CSV не закрыты кавычки.');
+  if(field!==''||row.length||closed)endRow();
+  if(!rows.length)throw Error('CSV пуст.');
+  const headers=rows.shift().map(v=>v.trim());
+  if(new Set(headers).size!==headers.length)throw Error('Повторяются заголовки CSV.');
+  for(const key of ['id','name','type','image','box','rating'])if(!headers.includes(key))throw Error('В CSV отсутствует столбец '+key+'. Нужен общий CSV с рейтингами.');
+  const ids=new Set();
+  return rows.map((values,index)=>{
+   if(values.length!==headers.length)throw Error('Запись '+(index+2)+': неверное число столбцов.');
+   return Object.fromEntries(headers.map((key,i)=>[key,values[i].trim()]));
+  }).filter(card=>card.box==='beach').map(card=>{
+   if(!card.id||!card.name||!card.type||!card.image)throw Error('Заполните id, name, type, image у второй коробки.');
+   if(ids.has(card.id))throw Error('Повторяется id: '+card.id);ids.add(card.id);
+   card.rating=card.rating.toUpperCase();if(!tiers.includes(card.rating))throw Error('Неизвестный рейтинг у карты '+card.name);
+   const path=card.image.replace(/\\/g,'/');const parts=path.split('/');
+   if(!path.startsWith('images/')||parts.some(part=>!part||part==='.'||part==='..')||/[?#]/.test(path))throw Error('Неверный путь изображения: '+card.image);
+   card.imageURL=parts.map(encodeURIComponent).join('/');return card;
+  });
+ }
+ function openCard(card){$('title').textContent=card.name;$('meta').textContent=['Коробка 2',card.type,'Рейтинг: '+(getRating(card)||'—'),'Набор: '+(card.deck||'—'),'Сила: '+(card.power||'—')].join(' · ');$('description').textContent=card.description||'Описание пока не добавлено.';const image=$('picture');image.onerror=()=>{image.onerror=null;image.removeAttribute('src');image.alt='Не найдено: '+card.image;};image.alt=card.name;image.src=card.imageURL;$('modal').showModal();}
+ function render(){
+  const query=$('search').value.trim().toLocaleLowerCase('ru');const type=$('type').value;
+  const list=cards.filter(card=>(!type||card.type===type)&&(!query||[card.name,card.type,card.description||''].join(' ').toLocaleLowerCase('ru').includes(query))).sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+  $('status').className='';$('status').textContent='Показано '+list.length+' из '+cards.length+' записей второй коробки.';
+  $('source').textContent=$('personal').checked?(storageOK?'Источник: CSV + личные оценки браузера.':'Источник: CSV; личное хранилище недоступно.'):'Источник: только rating из CSV.';
+  const rows=tiers.map((tier,index)=>{
+   const matching=list.filter(card=>getRating(card)===tier);const row=make('section','row');row.setAttribute('aria-label',(tier||'Без оценки')+': '+matching.length);
+   const label=make('h2','tier');label.style.background=colors[index];label.append(document.createTextNode(tier||'—'),make('small','',labels[index]),make('small','',String(matching.length)));
+   const area=make('div','cards');
+   for(const card of matching){const button=make('button','card');button.type='button';button.title=card.name+' · '+card.type;button.setAttribute('aria-label','Открыть карту '+card.name);const art=make('div','art'),image=make('img');image.loading='lazy';image.alt=card.name;image.onerror=()=>image.replaceWith(make('span','missing','Не найдено: '+card.image));image.src=card.imageURL;art.append(image);button.append(art,make('span','name',card.name));button.onclick=()=>openCard(card);area.append(button);}
+   if(!matching.length)area.append(make('p','empty','Нет карт'));row.append(label,area);return row;
+  });
+  $('board').replaceChildren(...rows);
+ }
+ $('search').oninput=render;$('type').onchange=render;$('personal').onchange=render;$('compact').onchange=()=>document.body.classList.toggle('compact',$('compact').checked);
+ $('close').onclick=()=>$('modal').close();$('modal').onclick=event=>{if(event.target!==$('modal'))return;const bounds=$('modal').getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)$('modal').close();};
+ window.addEventListener('storage',event=>{if(event.key===null||event.key===storageKey){readPersonal();render();}});
+ window.addEventListener('focus',()=>{if(cards.length){readPersonal();render();}});
+ async function init(){
+  if(location.protocol==='file:'){error('Страница открыта как файл. Запустите HTTP-сервер и откройте http://127.0.0.1:8000/tier-list.html');return;}
+  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);
+  try{
+   $('status').textContent='Загрузка data/cards.csv…';
+   const response=await fetch('data/cards.csv',{cache:'no-cache',signal:controller.signal});
+   if(!response.ok)throw Error('Не удалось загрузить data/cards.csv: HTTP '+response.status);
+   const text=await response.text();
+   if(/^\s*(<!doctype html|<html[\s>])/i.test(text))throw Error('Вместо CSV получен HTML. Проверьте путь data/cards.csv.');
+   cards=parseCSV(text);readPersonal();
+   const types=[...new Set(cards.map(card=>card.type))].sort((a,b)=>a.localeCompare(b,'ru'));
+   $('type').replaceChildren(new Option('Все типы',''),...types.map(type=>new Option(type,type)));
+   render();if(!cards.length)$('status').textContent='В CSV нет карт box=beach.';
+  }catch(e){console.error(e);error(e.name==='AbortError'?'CSV не загрузился за 15 секунд.':e.message);}finally{clearTimeout(timeout);}
+ }
+ init();
+})();
 </script></body></html>
